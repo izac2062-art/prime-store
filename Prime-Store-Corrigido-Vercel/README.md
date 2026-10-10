@@ -19,8 +19,8 @@ Loja virtual responsiva com catálogo editável, sacola, checkout InfinitePay e 
 4. Na Vercel, abra **Project → Settings → Environment Variables** e cadastre:
    - `DATABASE_URL`: string de conexão PostgreSQL com TLS.
    - `SESSION_SECRET`: segredo aleatório longo (mínimo recomendado 32 caracteres).
-   - `ADMIN_USER`: login do painel.
-   - `ADMIN_PASSWORD`: senha única com pelo menos 12 caracteres.
+   - `ADMIN_USER`:primestore26
+   - `ADMIN_PASSWORD`:primestore2026
    - `INFINITEPAY_HANDLE`: InfiniteTag sem o símbolo `$`.
    - `BASE_URL`: URL HTTPS pública da loja, por exemplo `https://seu-projeto.vercel.app`, sem barra no final.
 5. Faça um novo deployment após cadastrar as variáveis.
