@@ -91,7 +91,137 @@ document.querySelectorAll('[data-product-file]').forEach(el=>el.onchange=async()
  try { const url=await uploadImage(file); products[idx].image=url; card.querySelector('[data-key="image"]').value=url; card.querySelector('img').src=url; msg.textContent='Foto carregada. Clique em SALVAR ALTERAÇÕES.'; }
  catch(e){msg.style.color='#ff9b88';msg.textContent=e.message}
 });
-document.querySelectorAll('[data-delete]').forEach(b=>b.onclick=()=>{products.splice(Number(b.dataset.delete),1);renderEditor()})}$
+
+function renderEditor() {
+  $('#productEditor').innerHTML = products.map((p, i) => `
+    <article class="product-edit" data-index="${i}">
+      <img src="${esc(p.image || '')}" alt="">
+
+      <div class="fields">
+        <label>Nome
+          <input data-key="name" value="${esc(p.name || '')}">
+        </label>
+
+        <label>Categoria
+          <select data-key="category">
+            ${['Camisetas','Calças','Jaquetas','Calçados','Acessórios'].map(c =>
+              `<option ${p.category === c ? 'selected' : ''}>${c}</option>`
+            ).join('')}
+          </select>
+        </label>
+
+        <label class="field-check">
+          <input type="checkbox" data-key="active"
+            ${p.active !== false ? 'checked' : ''}>
+          Produto visível na loja
+        </label>
+      </div>
+
+      <div class="fields">
+        <label>Preço (R$)
+          <input type="number" min="0.01" step="0.01"
+            data-key="price" value="${p.price ?? ''}">
+        </label>
+
+        <label>Preço anterior (R$)
+          <input type="number" min="0" step="0.01"
+            data-key="oldPrice" value="${p.oldPrice ?? 0}">
+        </label>
+
+        <label>Tamanhos separados por vírgula
+          <input data-key="sizes"
+            value="${esc((p.sizes || []).join(', '))}">
+        </label>
+      </div>
+
+      <div class="fields">
+        <label>URL da foto
+          <input data-key="image" value="${esc(p.image || '')}"
+            placeholder="https://...">
+        </label>
+
+        <label>Escolher foto do computador ou celular
+          <input data-product-file="${i}" type="file"
+            accept="image/png,image/jpeg,image/webp">
+        </label>
+
+        <label>Selo curto
+          <input data-key="badge" value="${esc(p.badge || '')}">
+        </label>
+
+        <label>Descrição
+          <textarea data-key="description">${esc(p.description || '')}</textarea>
+        </label>
+
+        <button type="button" class="secondary" data-delete="${i}">
+          EXCLUIR PRODUTO
+        </button>
+      </div>
+    </article>
+  `).join('');
+
+  // Atualiza os valores dos produtos quando os campos são alterados.
+  document.querySelectorAll('.product-edit').forEach(card => {
+    card.querySelectorAll('[data-key]').forEach(input => {
+      input.onchange = () => {
+        const index = Number(card.dataset.index);
+        const key = input.dataset.key;
+
+        let value = input.type === 'checkbox'
+          ? input.checked
+          : input.value.trim();
+
+        if (key === 'price' || key === 'oldPrice') {
+          value = value === '' ? 0 : Number(value);
+        }
+
+        if (key === 'sizes') {
+          value = value.split(',').map(s => s.trim()).filter(Boolean);
+        }
+
+        products[index][key] = value;
+
+        if (key === 'image') {
+          card.querySelector('img').src = value;
+        }
+      };
+    });
+  });
+
+  // Upload de fotos.
+  document.querySelectorAll('[data-product-file]').forEach(el => {
+    el.onchange = async () => {
+      const file = el.files?.[0];
+      if (!file) return;
+
+      const card = el.closest('.product-edit');
+      const index = Number(card.dataset.index);
+      const msg = $('#saveMessage');
+
+      msg.textContent = 'Enviando foto...';
+
+      try {
+        const url = await uploadImage(file);
+        products[index].image = url;
+        card.querySelector('[data-key="image"]').value = url;
+        card.querySelector('img').src = url;
+
+        msg.textContent = 'Foto carregada. Clique em SALVAR ALTERAÇÕES.';
+      } catch (e) {
+        msg.textContent = e.message;
+      }
+    };
+  });
+
+  // Excluir produto da lista em edição.
+  document.querySelectorAll('[data-delete]').forEach(button => {
+    button.onclick = () => {
+      products.splice(Number(button.dataset.delete), 1);
+      renderEditor();
+    };
+  });
+}
+})}$
 $('#addProduct').onclick=()=>{
   products.push({
     id:'pc-'+Date.now(),
