@@ -140,7 +140,38 @@ app.get('/api/admin/products', requireAdmin, async (req, res) => res.json(await 
 app.put('/api/admin/products', requireAdmin, async (req, res) => {
   if (!Array.isArray(req.body)) return res.status(400).json({ error: 'Envie uma lista de produtos.' });
   const cleaned = req.body.map(p => ({ id: String(p.id || crypto.randomUUID()).slice(0,100), name: String(p.name || '').trim().slice(0,100), category: String(p.category || 'Unissex').slice(0,40), price: Number(p.price), oldPrice: Number(p.oldPrice || 0), sizes: Array.isArray(p.sizes) ? p.sizes.map(s => String(s).trim().slice(0,12)).filter(s => s && s.length > 0) : [], badge: String(p.badge || '').slice(0,30), image: String(p.image || '').slice(0,2000), description: String(p.description || '').slice(0,500), active: p.active !== false }));
-  if (cleaned.some(p => !p.name || !Number.isFinite(p.price) || p.price <= 0 || !p.sizes.length || (p.image && !(/^https:\/\//i.test(p.image) || /^\/media\/[0-9a-f-]{36}$/i.test(p.image))))) return res.status(400).json({ error: 'Confira nomes, preços maiores que zero e tamanhos dos produtos.' });
+  
+for (const p of cleaned) {
+  if (!p.name) {
+    return res.status(400).json({
+      error: 'Informe o nome do produto.'
+    });
+  }
+
+  if (!Number.isFinite(p.price) || p.price <= 0) {
+    return res.status(400).json({
+      error: `O preço do produto "${p.name}" deve ser maior que zero.`
+    });
+  }
+
+  if (!p.sizes.length) {
+    return res.status(400).json({
+      error: `Selecione pelo menos um tamanho para "${p.name}".`
+    });
+  }
+
+  const validImage =
+    !p.image ||
+    /^https:\/\/[^\s]+$/i.test(p.image) ||
+    /^\/media\/[0-9a-f-]{36}$/i.test(p.image);
+
+  if (!validImage) {
+    return res.status(400).json({
+      error: `A imagem de "${p.name}" não está no formato esperado. Verifique o upload.`
+    });
+  }
+}
+
   if (new Set(cleaned.map(p => p.id)).size !== cleaned.length) return res.status(400).json({ error: 'Existem produtos com IDs duplicados.' });
   await saveProducts(cleaned); res.json({ ok: true, products: cleaned });
 });
