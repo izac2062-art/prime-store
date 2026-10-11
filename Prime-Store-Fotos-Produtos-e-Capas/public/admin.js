@@ -221,7 +221,7 @@ function renderEditor() {
     };
   });
 }
-})}$
+}
 $('#addProduct').onclick=()=>{
   products.push({
     id:'pc-'+Date.now(),
