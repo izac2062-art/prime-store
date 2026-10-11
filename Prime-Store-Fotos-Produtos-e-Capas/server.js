@@ -189,7 +189,7 @@ app.post('/api/payments', async (req, res) => {
     }
     const response = await fetch('https://api.checkout.infinitepay.io/links', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     const result = await response.json().catch(() => ({}));
-    if (!response.ok || !result.url || !/^https:\/\/checkout\.infinitepay\.com\.br\//i.test(result.url)) {
+    if (!response.ok || !result.url ||!/^https:\/\/checkout\.infinitepay\.(?:com\.br|io)\//i.test(result.url) ) {
       order.paymentStatus = 'erro_ao_gerar_checkout'; order.status = 'cancelado'; await saveOrder(order);
       console.error('InfinitePay link error:', response.status, JSON.stringify(result).slice(0,500));
    return res.status(502).json({
