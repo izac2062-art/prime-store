@@ -10,6 +10,33 @@ document.querySelectorAll('.product-edit').forEach(card => {
     input.onchange = () => {
       const index = Number(card.dataset.index);
       const key = input.dataset.key;
+
+      let value = input.type === 'checkbox'
+        ? input.checked
+        : input.value.trim();
+
+      if (key === 'price' || key === 'oldPrice') {
+        value = value === '' ? 0 : Number(value);
+      }
+
+      if (key === 'sizes') {
+        value = value.split(',').map(s => s.trim()).filter(Boolean);
+      }
+
+      products[index][key] = value;
+
+      if (key === 'image') {
+        card.querySelector('img').src = value;
+      }
+    };
+  });
+});
+
+document.querySelectorAll('.product-edit').forEach(card => {
+  card.querySelectorAll('[data-key]').forEach(input => {
+    input.onchange = () => {
+      const index = Number(card.dataset.index);
+      const key = input.dataset.key;
       let value = input.type === 'checkbox'
         ? input.checked
         : input.value.trim();
