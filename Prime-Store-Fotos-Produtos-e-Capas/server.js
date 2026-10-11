@@ -192,9 +192,10 @@ app.post('/api/payments', async (req, res) => {
     if (!response.ok || !result.url || !/^https:\/\/checkout\.infinitepay\.com\.br\//i.test(result.url)) {
       order.paymentStatus = 'erro_ao_gerar_checkout'; order.status = 'cancelado'; await saveOrder(order);
       console.error('InfinitePay link error:', response.status, JSON.stringify(result).slice(0,500));
-      return res.status(502).json({
+   return res.status(502).json({
   error: 'Falha ao gerar checkout',
-  details: result.message || result.error || `Resposta HTTP ${response.status}`
+  status: response.status,
+  details: JSON.stringify(result).slice(0, 500)
 });
     }
     order.checkoutUrl = result.url; await saveOrder(order);
